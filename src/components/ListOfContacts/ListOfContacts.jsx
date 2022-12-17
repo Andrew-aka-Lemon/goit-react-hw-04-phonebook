@@ -1,32 +1,26 @@
-import { Component } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
-class ListOfContacts extends Component {
-  state = {};
-
-  render() {
-    const { onDeleteBtn, listToRender } = this.props;
-    return (
-      <div>
-        <ul>
-          {listToRender.map(({ id, name, number }) => {
-            return (
-              <Lishka key={id}>
-                <span>
-                  {name}: {number}
-                </span>
-                <NotUglyBtn type="button" onClick={() => onDeleteBtn(id)}>
-                  Delete
-                </NotUglyBtn>
-              </Lishka>
-            );
-          })}
-        </ul>
-      </div>
-    );
-  }
-}
+const ListOfContacts = ({ onDeleteBtn, listToRender }) => {
+  return (
+    <div>
+      <ul>
+        {listToRender.map(({ id, name, number }) => {
+          return (
+            <Lishka key={id}>
+              <span>
+                {name}: {number}
+              </span>
+              <NotUglyBtn type="button" onClick={() => onDeleteBtn(id)}>
+                Delete
+              </NotUglyBtn>
+            </Lishka>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
 
 const NotUglyBtn = styled.button`
   margin-left: 5px;
