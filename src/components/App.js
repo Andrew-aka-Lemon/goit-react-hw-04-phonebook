@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 import AddContactForm from './AddContactForm';
@@ -6,50 +6,26 @@ import ListOfContacts from './ListOfContacts';
 import Filter from './Filter';
 import { Title } from './AddContactForm/AddContactForm.styled';
 
-class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+const App = () => {
+  const localStorageKey = 'UserContacts';
 
-  localStorageKey = 'UserContacts';
+  const [contacts, setContacts] = useState(() => {
+    const savedContacts = localStorage.getItem(localStorageKey);
 
-  componentDidUpdate(_, prevState) {
-    if (prevState.contact !== this.state.contacts) {
-      localStorage.setItem(
-        this.localStorageKey,
-        JSON.stringify(this.state.contacts)
-      );
+    if (savedContacts !== null) {
+      return JSON.parse(savedContacts);
     }
-  }
+    return [];
+  });
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const defaultContacts = [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-      { id: 'id-5', name: 'Rolie Pupson', number: '459-12-56' },
-    ];
+  useEffect(() => {
+    localStorage.setItem(localStorageKey, JSON.stringify(contacts));
+  }, [contacts]);
 
-    if (localStorage.getItem(this.localStorageKey) !== null) {
-      const storedContacts = JSON.parse(
-        localStorage.getItem(this.localStorageKey)
-      );
-
-      this.setState({ contacts: storedContacts });
-
-      if (storedContacts.length === 0) {
-        this.setState({ contacts: defaultContacts });
-      }
-    } else {
-      this.setState({ contacts: defaultContacts });
-    }
-  }
-
-  addContactHandler = newContact => {
+  const addContactHandler = newContact => {
     if (
-      this.state.contacts.filter(contact => {
+      contacts.filter(contact => {
         return contact.name
           .toLowerCase()
           .includes(newContact.name.toLowerCase());
@@ -59,50 +35,34 @@ class App extends Component {
       return;
     }
 
-    this.setState(ps => {
-      return {
-        contacts: [...ps.contacts, newContact],
-      };
-    });
+    setContacts(ps => [...ps, newContact]);
   };
 
-  setFilterHandler = f => {
-    this.setState({ filter: f.toLowerCase() });
+  const setFilterHandler = f => setFilter(f.toLowerCase());
+
+  const contactDeleter = id => {
+    setContacts(ps => ps.filter(contact => contact.id !== id));
   };
 
-  contactDeleter = id => {
-    this.setState(ps => {
-      return {
-        contacts: ps.contacts.filter(contact => contact.id !== id),
-      };
-    });
-  };
+  const listToRender = contacts.filter(contact => {
+    return contact.name.toLowerCase().includes(filter);
+  });
 
-  render() {
-    const { contacts, filter } = this.state;
-    const listToRender = contacts.filter(contact => {
-      return contact.name.toLowerCase().includes(filter);
-    });
-
-    return (
-      <Wrapper>
-        <div>
-          <h1>Phonebook</h1>
-          <AddContactForm onSubmit={this.addContactHandler} />
-          <Filter
-            onChange={this.setFilterHandler}
-            filterText={this.state.filter}
-          />
-          <Title>Contacts</Title>
-          <ListOfContacts
-            listToRender={listToRender}
-            onDeleteBtn={this.contactDeleter}
-          />
-        </div>
-      </Wrapper>
-    );
-  }
-}
+  return (
+    <Wrapper>
+      <div>
+        <h1>Phonebook</h1>
+        <AddContactForm onSubmit={addContactHandler} />
+        <Filter onChange={setFilterHandler} filterText={filter} />
+        <Title>Contacts</Title>
+        <ListOfContacts
+          listToRender={listToRender}
+          onDeleteBtn={contactDeleter}
+        />
+      </div>
+    </Wrapper>
+  );
+};
 
 const Wrapper = styled.div`
   margin-top: 50px;
